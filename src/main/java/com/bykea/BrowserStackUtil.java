@@ -52,6 +52,7 @@ public class BrowserStackUtil {
         cap.setCapability("platformName", "Android");
         cap.setCapability("device", "Samsung Galaxy S21");
         cap.setCapability("os_version", "11.0");
+        cap.setCapability("autoGrantPermissions", "true");
         cap.setCapability("app_url", " bs://9916a937854351eeae596872b07965f496bb4946");
         return cap;
     }
