@@ -22,10 +22,12 @@ public class BrowserStackUtil {
     @Before
     public void setUp() {
         startLocalTest();
+        startDriver();
     }
 
     @After
     public void tearDown() {
+        stopDriver();
         stopLocalTest();
     }
 
