@@ -4,9 +4,11 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 
-public class LoginSteps {
+public class LoginSteps extends BaseSetup {
     @Given("^User open bykea app$")
-    public void userOpenBykeaApp() {
+    public void userOpenBykeaApp() throws InterruptedException {
+        Thread.sleep(5000);
+        new LoginPage(getDriver()).loginApp("03322971040");
     }
 
     @And("User click on the login button")
@@ -26,6 +28,7 @@ public class LoginSteps {
     }
 
     @Then("User should be able to see that user can login successfully")
-    public void userShouldBeAbleToSeeThatUserCanLoginSuccessfully() {
+    public void userShouldBeAbleToSeeThatUserCanLoginSuccessfully() throws InterruptedException {
+        Thread.sleep(2000);
     }
 }
