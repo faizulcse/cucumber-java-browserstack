@@ -4,13 +4,17 @@ import io.cucumber.java.After;
 import io.cucumber.java.Before;
 
 public class Hooks {
+    private final BaseSetup baseSetup = new BaseSetup();
+
     @Before()
     public void setUp() {
-        new BaseSetup().startDriver();
+        baseSetup.startLocalTest();
+        baseSetup.startDriver();
     }
 
     @After()
     public void tearDown() {
-        new BaseSetup().stopDriver();
+        baseSetup.stopDriver();
+        baseSetup.stopLocalTest();
     }
 }

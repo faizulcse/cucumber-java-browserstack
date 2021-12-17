@@ -7,7 +7,6 @@ import io.cucumber.java.en.Then;
 public class LoginSteps {
     @Given("^User open bykea app$")
     public void userOpenBykeaApp() {
-        System.out.println("Open");
     }
 
     @And("User click on the login button")

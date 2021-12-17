@@ -1,4 +1,4 @@
-Feature: Bykea logout feature
+Feature: Bykea setting page feature
 
   @test
   Scenario: User should be able to login bykea app successfully
