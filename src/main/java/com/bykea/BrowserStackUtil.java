@@ -46,6 +46,21 @@ public class BrowserStackUtil {
     }
 
     public static DesiredCapabilities getCap() {
+//         Use Java Client v6.0.0 or above
+//         HashMap<String, Object> browserstackOptions = new HashMap<String, Object>();
+//         browserstackOptions.put("local", isLocalConnected() ? "true" : "false");
+//         browserstackOptions.put("browserstack.idleTimeout", "60");
+//         browserstackOptions.put("gpsLocation", "24.8666842,670809064");
+//         browserstackOptions.put("geoLocation", "PK");
+        
+//         DesiredCapabilities capabilities = new DesiredCapabilities();
+//         capabilities.setCapability("bstack:options", browserstackOptions);
+//         capabilities.setCapability("platformName", "android");
+//         capabilities.setCapability("platformVersion", "11.0");
+//         capabilities.setCapability("deviceName", "Samsung Galaxy S21");
+//         capabilities.setCapability("app", "bs://9916a937854351eeae596872b07965f496bb4946");
+//         capabilities.setCapability("otherApps", new String[]{"bs://f83ece3fbf27f772bb1f6275ca1bbd1822fda733"});
+
         DesiredCapabilities cap = new DesiredCapabilities();
         cap.setCapability("browserstack.local", isLocalConnected() ? "true" : "false");
         cap.setCapability("browserstack.gpsLocation", "24.8666842,67.0809064");
