@@ -13,11 +13,9 @@ import java.util.logging.Logger;
 
 public class BaseSetup {
     public static AppiumDriver<?> driver;
-    public static final boolean IS_BROWSERSTACK = true;
-    //    public static final boolean IS_BROWSERSTACK = Boolean.parseBoolean(System.getProperty("browserstack"));
     private static final String APPIUM_URL = "http://127.0.0.1:4723/wd/hub";
-    private static final String APK_FILE = System.getProperty("user.home") + "/Downloads/app.apk";
-//    private static final String APK_FILE = System.getProperty("user.dir") + "/APK/app.apk";
+    private static final String APK_FILE = System.getProperty("user.dir") + "/APK/app.apk";
+    public static final boolean IS_BROWSERSTACK = Boolean.parseBoolean(System.getProperty("browserstack"));
 
     public static void startDriver() {
         if (IS_BROWSERSTACK && isBsLocalRun())

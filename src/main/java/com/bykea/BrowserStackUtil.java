@@ -74,9 +74,9 @@ public class BrowserStackUtil {
         return res.asString();
     }
 
-    public static String getRecentApp(String res, String customId) {
+    public static String getRecentApp(String appList, String customId) {
         String recentApp = null;
-        JsonArray appArray = new Gson().fromJson(res, JsonArray.class).getAsJsonArray();
+        JsonArray appArray = new Gson().fromJson(appList, JsonArray.class).getAsJsonArray();
         for (int i = 0; i < appArray.size(); i++) {
             if (appArray.get(i).getAsJsonObject().get("app_name").getAsString().equals(customId)) {
                 recentApp = appArray.get(i).getAsJsonObject().get("app_url").getAsString();
