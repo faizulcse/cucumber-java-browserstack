@@ -2,18 +2,16 @@ package com.bykea;
 
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
+import io.cucumber.java.Scenario;
 
-public class Hooks {
-
-    @Before()
+public class Hooks extends BaseSetup {
+    @Before
     public void setUp() {
-        BaseSetup.startLocalTest();
         BaseSetup.startDriver();
     }
 
-    @After()
-    public void tearDown() {
-        BaseSetup.stopDriver();
-        BaseSetup.stopLocalTest();
+    @After
+    public void tearDown(Scenario scenario) {
+        BaseSetup.stopDriver(scenario);
     }
 }

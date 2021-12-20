@@ -1,82 +1,82 @@
 package com.bykea;
 
-import com.browserstack.local.Local;
-import org.openqa.selenium.WebDriver;
+import io.appium.java_client.AppiumDriver;
+import io.appium.java_client.remote.AndroidMobileCapabilityType;
+import io.appium.java_client.remote.MobileCapabilityType;
+import io.cucumber.java.Scenario;
 import org.openqa.selenium.remote.DesiredCapabilities;
-import org.openqa.selenium.remote.RemoteWebDriver;
 
 import java.net.URL;
-import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class BaseSetup {
-    private static Local localTest;
-    private static WebDriver driver;
-    public static String AUTOMATE_USERNAME = System.getenv("BS_USERNAME");
-    public static String AUTOMATE_ACCESS_KEY = System.getenv("BS_ACCESS_KEY");
-    public static String URL = "https://" + AUTOMATE_USERNAME + ":" + AUTOMATE_ACCESS_KEY + "@hub-cloud.browserstack.com/wd/hub";
+    public static AppiumDriver<?> driver;
+    public static final boolean IS_BROWSERSTACK = true;
+    //    public static final boolean IS_BROWSERSTACK = Boolean.parseBoolean(System.getProperty("browserstack"));
+    private static final String APPIUM_URL = "http://127.0.0.1:4723/wd/hub";
+    private static final String APK_FILE = System.getProperty("user.home") + "/Downloads/app.apk";
+//    private static final String APK_FILE = System.getProperty("user.dir") + "/APK/app.apk";
 
     public static void startDriver() {
+        if (IS_BROWSERSTACK && isBsLocalRun())
+            BrowserStackUtil.startLocalTest();
         try {
             Logger.getLogger("org.openqa.selenium").setLevel(Level.OFF);
-            driver = new RemoteWebDriver(new URL(URL), getCap());
+            driver = IS_BROWSERSTACK ? new AppiumDriver<>(new URL(BrowserStackUtil.SERVER_URL), getBrowserStackCapabilities()) : new AppiumDriver<>(new URL(APPIUM_URL), getLocalCapabilities());
+            driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        if (IS_BROWSERSTACK)
+            BrowserStackUtil.printResultLink(getSessionId());
+    }
+
+    public static String getSessionId() {
+        return driver.getSessionId().toString();
+    }
+
+    public static void stopDriver(Scenario scenario) {
+        try {
+            if (IS_BROWSERSTACK)
+                BrowserStackUtil.setTestStatus(getSessionId(), scenario);
+            if (IS_BROWSERSTACK && isBsLocalRun())
+                BrowserStackUtil.stopLocalTest();
+            if (driver != null)
+                driver.quit();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public static void stopDriver() {
-        if (driver != null)
-            driver.quit();
+    private static boolean isBsLocalRun() {
+        return Boolean.parseBoolean(getBrowserStackCapabilities().getCapability("browserstack.local").toString());
     }
 
-    public WebDriver getDriver() {
-        if (driver != null)
-            return driver;
-        else {
-            System.out.println("Driver not initialize");
-            return null;
-        }
-    }
-
-    public static DesiredCapabilities getCap() {
+    public static DesiredCapabilities getLocalCapabilities() {
         DesiredCapabilities cap = new DesiredCapabilities();
-        cap.setCapability("browserstack.local", isLocalConnected() ? "true" : "false");
-        cap.setCapability("platformName", "Android");
-        cap.setCapability("device", "Samsung Galaxy S9");
-        cap.setCapability("platformVersion", "8.0");
-        cap.setCapability("app_url", "bs://9916a937854351eeae596872b07965f496bb4946");
-        cap.setCapability("automationName", "Appium");
+        cap.setCapability(MobileCapabilityType.PLATFORM_NAME, "Android");
+        cap.setCapability(MobileCapabilityType.PLATFORM_VERSION, "9.0");
+        cap.setCapability(MobileCapabilityType.DEVICE_NAME, "Samsung S8");
+        cap.setCapability(MobileCapabilityType.AUTOMATION_NAME, "Appium");
+        cap.setCapability(MobileCapabilityType.NEW_COMMAND_TIMEOUT, "12000");
+        cap.setCapability(AndroidMobileCapabilityType.AUTO_GRANT_PERMISSIONS, "true");
+        cap.setCapability(MobileCapabilityType.APP, APK_FILE);
         return cap;
     }
 
-    public static Local getLocalTest() {
-        return localTest;
-    }
-
-    public static void startLocalTest() {
-        try {
-            localTest = new Local();
-            HashMap<String, String> bsLocalArgs = new HashMap<String, String>();
-            bsLocalArgs.put("key", AUTOMATE_ACCESS_KEY);
-            bsLocalArgs.put("forcelocal", "true");
-            localTest.start(bsLocalArgs);
-        } catch (Exception ignore) {
-
-        }
-    }
-
-    public static void stopLocalTest() {
-        try {
-            if (getLocalTest().isRunning())
-                getLocalTest().stop();
-        } catch (Exception ignore) {
-
-        }
-    }
-
-    public static boolean isLocalConnected() {
-        return localTest != null;
+    public static DesiredCapabilities getBrowserStackCapabilities() {
+        String appList = BrowserStackUtil.getRecentAppList();
+        DesiredCapabilities cap = new DesiredCapabilities();
+        cap.setCapability("browserstack.local", "true");
+        cap.setCapability("browserstack.gpsLocation", "24.8666842,67.0809064");
+        cap.setCapability("platformName", "Android");
+        cap.setCapability("device", "Samsung Galaxy S21");
+        cap.setCapability("platformVersion", "11.0");
+        cap.setCapability("autoGrantPermissions", "true");
+        cap.setCapability("app_url", BrowserStackUtil.getRecentApp(appList, "app.apk"));
+        cap.setCapability("otherApps", new String[]{BrowserStackUtil.getRecentApp(appList, "partnerapk.apk")});
+        return cap;
     }
 }

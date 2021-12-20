@@ -1,4 +1,5 @@
 package com.bykea;
 
-public class BasePage {
+public class BasePage extends BaseSetup {
+
 }

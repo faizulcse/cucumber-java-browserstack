@@ -1,16 +1,9 @@
 package com.bykea;
 
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 public class LoginPage extends BasePage {
-    WebDriver driver;
-
-    public LoginPage(WebDriver driver) {
-        this.driver = driver;
-    }
-
     private String ENTER_IP_XPATH = "/hierarchy/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.EditText";
     private String OKAY_BUTTON_ID = "android:id/button1";
     private String ENGLISH_RADIO_BUTTON_ID = "com.bykea.pk:id/rbEnglish";
@@ -22,7 +15,6 @@ public class LoginPage extends BasePage {
     private String ENTER_OTP_ID = "com.bykea.pk:id/verificationCodeEt_1";
     private String RESEND_OTP_ID = "com.bykea.pk:id/resendTv";
 
-
     private String LOGIN_BUTTON_ID_PARTNER = "com.bykea.pk.partner:id/tv_login";
     private String ENTER_PHONE_NUMBER_PARTNER = "com.bykea.pk.partner:id/phoneNumberEt";
     private String PROCEED_BUTTON_PARTNER = "com.bykea.pk.partner:id/loginBtn";
@@ -33,21 +25,10 @@ public class LoginPage extends BasePage {
     }
 
     public WebElement getOkayButton() {
-        By ALLOW_BUTTON = By.xpath("//*[@text='ALLOW']");
-        if (driver.findElements(ALLOW_BUTTON).size() > 0)
-            driver.findElement(ALLOW_BUTTON).click();
         return driver.findElement(By.id(OKAY_BUTTON_ID));
     }
 
     public WebElement getEnglishRadioButton() {
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        By ALLOW_BUTTON = By.xpath("//*[@text='ALLOW']");
-        if (driver.findElements(ALLOW_BUTTON).size() > 0)
-            driver.findElement(ALLOW_BUTTON).click();
         return driver.findElement(By.id(ENGLISH_RADIO_BUTTON_ID));
     }
 
@@ -56,9 +37,6 @@ public class LoginPage extends BasePage {
     }
 
     public WebElement getTickButton() {
-        By ALLOW_BUTTON = By.xpath("//*[@text='ALLOW']");
-        if (driver.findElements(ALLOW_BUTTON).size() > 0)
-            driver.findElement(ALLOW_BUTTON).click();
         return driver.findElement(By.id(TICK_BUTTON_ID));
     }
 
@@ -96,7 +74,6 @@ public class LoginPage extends BasePage {
     }
 
     public void loginApp(String phone) {
-        enterIp().click();
         enterIp().clear();
         enterIp().sendKeys("https://mars-talos.bykea.dev");
         getOkayButton().click();
