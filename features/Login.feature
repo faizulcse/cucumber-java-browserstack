@@ -1,3 +1,4 @@
+@login
 Feature: Bykea login feature
 
   @test

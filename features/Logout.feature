@@ -1,3 +1,4 @@
+@logout
 Feature: Bykea logout feature
 
   @test

@@ -1,3 +1,4 @@
+@setting
 Feature: Bykea setting page feature
 
   @test
