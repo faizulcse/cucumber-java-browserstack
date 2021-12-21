@@ -6,12 +6,12 @@ import io.cucumber.java.Scenario;
 
 public class Hooks extends BaseSetup {
     @Before
-    public void setUp() {
-        BaseSetup.startDriver();
+    public void setUp(Scenario scenario) {
+        startDriver(scenario);
     }
 
     @After
     public void tearDown(Scenario scenario) {
-        BaseSetup.stopDriver(scenario);
+        stopDriver();
     }
 }

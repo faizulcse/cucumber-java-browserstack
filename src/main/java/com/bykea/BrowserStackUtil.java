@@ -18,17 +18,16 @@ public class BrowserStackUtil {
     public static final String API_URL = "https://" + AUTOMATE_USERNAME + ":" + AUTOMATE_ACCESS_KEY + "@api-cloud.browserstack.com";
 
     public static void startLocalTest() {
-        try {
             if (!isLocalConnected()) {
                 local = new Local();
                 HashMap<String, String> localArgs = new HashMap<>();
                 localArgs.put("key", System.getenv("BROWSERSTACK_ACCESS_KEY"));
                 localArgs.put("forcelocal", "true");
-                local.start(localArgs);
+                try {
+                    local.start(localArgs);
+                } catch (Exception ignore) {
+                }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     public static void stopLocalTest() {

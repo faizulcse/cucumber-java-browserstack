@@ -1,4 +1,4 @@
-@home
+@login
 Feature: Bykea home page feature
 
   @test
