@@ -6,7 +6,7 @@ import org.junit.runner.RunWith;
 
 @CucumberOptions(
         features = {"features"},
-        glue = {},
+        glue = {"com/bykea/stepdefs"},
         tags = "@test",
         plugin = {"pretty", "html:target/cucumber-html", "json:target/cucumber.json"}
 )

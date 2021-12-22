@@ -1,5 +1,6 @@
-package com.bykea;
+package com.bykea.stepdefs;
 
+import com.bykea.utils.BaseSetup;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.Scenario;
@@ -11,7 +12,7 @@ public class Hooks extends BaseSetup {
     }
 
     @After
-    public void tearDown(Scenario scenario) {
+    public void tearDown() {
         stopDriver();
     }
 }
