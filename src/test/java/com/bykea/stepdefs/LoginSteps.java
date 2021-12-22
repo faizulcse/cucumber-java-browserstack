@@ -1,6 +1,6 @@
 package com.bykea.stepdefs;
 
-import com.bykea.LoginPage;
+import com.bykea.pages.LoginPage;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;

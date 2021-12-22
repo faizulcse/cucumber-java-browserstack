@@ -1,4 +1,4 @@
-package com.bykea;
+package com.bykea.pages;
 
 import com.bykea.utils.BaseSetup;
 import com.bykea.utils.DriverManager;

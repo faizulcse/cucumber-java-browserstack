@@ -1,4 +1,4 @@
-package com.bykea;
+package com.bykea.pages;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;

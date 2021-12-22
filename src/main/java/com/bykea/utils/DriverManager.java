@@ -4,8 +4,8 @@ import com.browserstack.local.Local;
 import io.appium.java_client.AppiumDriver;
 
 public class DriverManager {
-    private static ThreadLocal<AppiumDriver<?>> driverThread = new ThreadLocal<>();
-    private static ThreadLocal<Local> localTestingThread = new ThreadLocal<>();
+    static ThreadLocal<AppiumDriver<?>> driverThread = new ThreadLocal<>();
+    static ThreadLocal<Local> localTestingThread = new ThreadLocal<>();
 
     public static AppiumDriver<?> getDriver() {
         return driverThread.get();

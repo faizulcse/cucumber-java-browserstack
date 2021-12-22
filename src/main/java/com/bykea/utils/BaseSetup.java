@@ -84,6 +84,8 @@ public class BaseSetup {
         cap.setCapability(MobileCapabilityType.NEW_COMMAND_TIMEOUT, "12000");
         cap.setCapability(AndroidMobileCapabilityType.AUTO_GRANT_PERMISSIONS, "true");
         cap.setCapability(MobileCapabilityType.APP, ROOT_DIR + "/APK/app.apk");
+        cap.setCapability(MobileCapabilityType.FULL_RESET, "true");
+        cap.setCapability(MobileCapabilityType.NO_RESET, "false");
         return cap;
     }
 
