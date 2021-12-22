@@ -20,7 +20,7 @@ public class BrowserStack {
     public static void printResultLink(String session) {
         Response res = RestAssured.given().when().get(API_URL + "/app-automate/sessions/" + session + ".json");
         JsonObject automationSession = new Gson().fromJson(res.asString(), JsonObject.class).getAsJsonObject("automation_session");
-        System.out.println(automationSession.get("browser_url").getAsString());
+        System.out.println("Report log: " + automationSession.get("browser_url").getAsString());
     }
 
     public static String getRecentAppList() {
