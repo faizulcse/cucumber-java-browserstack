@@ -23,17 +23,17 @@ Go to project root directory and run the following command
 ### 1. Test run command
 
 ```commandline
-mvn test -Dbrowserstack=true -q
+mvn test -Dbrowserstack=true -Dprofile=s21 -q
 ```
 
 ### 2. Single test run command
 
 ```commandline
-mvn test -Dbrowserstack=true -Dcucumber.filter.tags="@login" -q
+mvn test -Dbrowserstack=true -Dprofile=s21 -Dcucumber.filter.tags="@login" -q
 ```
 
 ### 3. Parallel test run command
 
 ```commandline
-mvn test -Dbrowserstack=true -P parallel -Dcucumber.filter.tags="@login" -q
+mvn test -Dbrowserstack=true -Dprofile=s21 -P parallel -Dcucumber.filter.tags="@login" -q
 ```

@@ -7,8 +7,11 @@ import io.appium.java_client.remote.MobileCapabilityType;
 import io.cucumber.java.Scenario;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,6 +23,7 @@ public class BaseSetup {
     static final String APPIUM_URL = "http://127.0.0.1:4723/wd/hub";
     static final String ROOT_DIR = System.getProperty("user.dir");
     static final boolean BS_RUN = Boolean.parseBoolean(System.getProperty("browserstack"));
+    static final String DEVICE_PROFILE = System.getProperty("profile") == null ? "s21" : System.getProperty("profile");
     Scenario scenario;
 
     public void startDriver(Scenario name) {
@@ -28,10 +32,10 @@ public class BaseSetup {
             scenario = name;
             AppiumDriver<?> driver;
             if (!BS_RUN)
-                driver = new AppiumDriver<>(new URL(APPIUM_URL), getLocalCapabilities());
+                driver = new AppiumDriver<>(new URL(APPIUM_URL), getLocalCapabilities(DEVICE_PROFILE));
             else {
                 enableLocalTesting();
-                driver = new AppiumDriver<>(new URL(BROWSERSTACK_URL), getBrowserStackCapabilities());
+                driver = new AppiumDriver<>(new URL(BROWSERSTACK_URL), getBrowserStackCapabilities(DEVICE_PROFILE));
                 BrowserStack.printResultLink(driver.getSessionId().toString());
             }
             driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
@@ -75,30 +79,45 @@ public class BaseSetup {
         }
     }
 
-    public DesiredCapabilities getLocalCapabilities() {
+    public DesiredCapabilities getLocalCapabilities(String deviceProfile) {
         DesiredCapabilities cap = new DesiredCapabilities();
-        cap.setCapability(MobileCapabilityType.PLATFORM_NAME, "Android");
-        cap.setCapability(MobileCapabilityType.PLATFORM_VERSION, "9.0");
-        cap.setCapability(MobileCapabilityType.DEVICE_NAME, "Samsung S8");
+        Properties props = getDeviceProps(deviceProfile);
+        cap.setCapability(MobileCapabilityType.PLATFORM_NAME, props.getProperty("platformName"));
+        cap.setCapability(MobileCapabilityType.PLATFORM_VERSION, props.getProperty("platformVersion"));
+        cap.setCapability(MobileCapabilityType.DEVICE_NAME, props.getProperty("deviceName"));
         cap.setCapability(MobileCapabilityType.AUTOMATION_NAME, "Appium");
         cap.setCapability(MobileCapabilityType.NEW_COMMAND_TIMEOUT, "12000");
         cap.setCapability(AndroidMobileCapabilityType.AUTO_GRANT_PERMISSIONS, "true");
-        cap.setCapability(MobileCapabilityType.APP, ROOT_DIR + "/APK/app.apk");
-        cap.setCapability(MobileCapabilityType.FULL_RESET, "true");
-        cap.setCapability(MobileCapabilityType.NO_RESET, "false");
+        cap.setCapability(MobileCapabilityType.APP, "C:/Users/BS705/Downloads/" + props.getProperty("app"));
+        cap.setCapability(AndroidMobileCapabilityType.APP_PACKAGE, props.getProperty("appPackage"));
+        cap.setCapability(AndroidMobileCapabilityType.APP_ACTIVITY, props.getProperty("appActivity"));
+        cap.setCapability(MobileCapabilityType.FULL_RESET, props.getProperty("fullReset"));
+        cap.setCapability(MobileCapabilityType.NO_RESET, props.getProperty("noReset"));
         return cap;
     }
 
-    public DesiredCapabilities getBrowserStackCapabilities() {
+    public DesiredCapabilities getBrowserStackCapabilities(String deviceProfile) {
+        Properties props = getDeviceProps(deviceProfile);
         DesiredCapabilities cap = new DesiredCapabilities();
-        cap.setCapability("browserstack.local", "true");
+        cap.setCapability("browserstack.local", props.getProperty("local"));
         cap.setCapability("name", scenario.getName());
-        cap.setCapability("browserstack.gpsLocation", "24.8666842,67.0809064");
-        cap.setCapability("platformName", "Android");
-        cap.setCapability("device", "Samsung Galaxy S21");
-        cap.setCapability("platformVersion", "11.0");
-        cap.setCapability("autoGrantPermissions", "true");
-        cap.setCapability("app_url", "bs://9916a937854351eeae596872b07965f496bb4946");
+        cap.setCapability("browserstack.gpsLocation", props.getProperty("gpsLocation"));
+        cap.setCapability("platformName", props.getProperty("platformName"));
+        cap.setCapability("device", props.getProperty("deviceName"));
+        cap.setCapability("platformVersion", props.getProperty("platformVersion"));
+        cap.setCapability("autoGrantPermissions", props.getProperty("autoGrantPermissions"));
+        cap.setCapability("app_url", props.getProperty("app"));
         return cap;
+    }
+
+    public static Properties getDeviceProps(String name) {
+        String profile = ROOT_DIR + "/devices/" + name + ".properties";
+        Properties props = new Properties();
+        try {
+            props.load(new FileInputStream(profile));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return props;
     }
 }
