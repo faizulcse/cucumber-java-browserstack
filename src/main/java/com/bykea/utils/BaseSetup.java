@@ -1,11 +1,16 @@
 package com.bykea.utils;
 
 import com.browserstack.local.Local;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import io.appium.java_client.AppiumDriver;
 import io.appium.java_client.remote.AndroidMobileCapabilityType;
 import io.appium.java_client.remote.MobileCapabilityType;
 import io.cucumber.java.Scenario;
+import io.restassured.RestAssured;
+import io.restassured.response.Response;
 import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.remote.SessionId;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -17,71 +22,104 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class BaseSetup {
-    static final String AUTOMATE_USERNAME = System.getenv("BROWSERSTACK_USERNAME");
-    static final String AUTOMATE_ACCESS_KEY = System.getenv("BROWSERSTACK_ACCESS_KEY");
-    static final String BROWSERSTACK_URL = "https://" + AUTOMATE_USERNAME + ":" + AUTOMATE_ACCESS_KEY + "@hub-cloud.browserstack.com/wd/hub";
-    static final String APPIUM_URL = "http://127.0.0.1:4723/wd/hub";
-    static final String ROOT_DIR = System.getProperty("user.dir");
-    static final boolean BS_RUN = Boolean.parseBoolean(System.getProperty("browserstack"));
-    static final String DEVICE_PROFILE = System.getProperty("profile") == null ? "s21" : System.getProperty("profile");
     Scenario scenario;
+    protected boolean localConnected;
+    protected static final String AUTOMATE_USERNAME = System.getenv("BROWSERSTACK_USERNAME");
+    protected static final String AUTOMATE_ACCESS_KEY = System.getenv("BROWSERSTACK_ACCESS_KEY");
+    protected static final String BROWSERSTACK_URL = "https://" + AUTOMATE_USERNAME + ":" + AUTOMATE_ACCESS_KEY + "@hub-cloud.browserstack.com/wd/hub";
+    protected static final String API_URL = "https://" + AUTOMATE_USERNAME + ":" + AUTOMATE_ACCESS_KEY + "@api-cloud.browserstack.com";
+    protected static final String APPIUM_URL = "http://127.0.0.1:4723/wd/hub";
+    protected static final String ROOT_DIR = System.getProperty("user.dir");
+    protected static final boolean RUN_BS = Boolean.parseBoolean(System.getProperty("browserstack"));
+    protected static final String DEVICE_PROFILE = System.getProperty("profile") == null ? "s21" : System.getProperty("profile");
 
     public void startDriver(Scenario name) {
         Logger.getLogger("org.openqa.selenium").setLevel(Level.OFF);
+        System.out.println("Selected device: " + getDeviceProps(DEVICE_PROFILE).getProperty("deviceName") + ", BrowserStack: " + RUN_BS + ", BS Local: " + localConnected);
         try {
             scenario = name;
             AppiumDriver<?> driver;
-            if (!BS_RUN)
-                driver = new AppiumDriver<>(new URL(APPIUM_URL), getLocalCapabilities(DEVICE_PROFILE));
-            else {
-                enableLocalTesting();
+            if (RUN_BS) {
                 driver = new AppiumDriver<>(new URL(BROWSERSTACK_URL), getBrowserStackCapabilities(DEVICE_PROFILE));
-                BrowserStack.printResultLink(driver.getSessionId().toString());
+                printResultLink(driver.getSessionId());
+            } else {
+                driver = new AppiumDriver<>(new URL(APPIUM_URL), getLocalCapabilities(DEVICE_PROFILE));
             }
             driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
             DriverManager.setWebDriver(driver);
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println(e.getLocalizedMessage());
         }
     }
 
-    public String getSessionId() {
-        return DriverManager.getDriver().getSessionId().toString();
+    public SessionId getSessionId() {
+        return DriverManager.getDriver() != null ? DriverManager.getDriver().getSessionId() : null;
+    }
+
+    public String getEndpoint(SessionId id) {
+        return API_URL + "/app-automate/sessions/" + id + ".json";
     }
 
     public void enableLocalTesting() {
+        Local local = new Local();
+        HashMap<String, String> localArgs = new HashMap<>();
+        localArgs.put("key", AUTOMATE_ACCESS_KEY);
+        localArgs.put("forcelocal", "true");
         try {
-            Local local = new Local();
-            HashMap<String, String> localArgs = new HashMap<>();
-            localArgs.put("key", AUTOMATE_ACCESS_KEY);
-            localArgs.put("forcelocal", "true");
             local.start(localArgs);
-            DriverManager.setLocalTesting(local);
-        } catch (Exception ignore) {
+        } catch (Exception e) {
+            String errorMsg = e.getLocalizedMessage();
+            if (errorMsg.contains("browserstack local client is running"))
+                stopRunningLocalPort(errorMsg);
         }
-    }
-
-    public void disableLocalTesting() throws Exception {
-        if (DriverManager.getLocalTesting() != null)
-            DriverManager.getLocalTesting().stop();
-    }
-
-    public void stopDriver() {
-        if (BS_RUN)
-            BrowserStack.setTestStatus(getSessionId(), scenario);
         try {
-            if (DriverManager.getDriver() != null)
-                DriverManager.getDriver().quit();
-            if (BS_RUN)
-                disableLocalTesting();
+            local.start(localArgs);
         } catch (Exception e) {
             e.printStackTrace();
         }
+        localConnected = true;
+        DriverManager.setLocalTesting(local);
     }
 
-    public DesiredCapabilities getLocalCapabilities(String deviceProfile) {
+    public void stopRunningLocalPort(String error) {
+        String process = new CommandPrompt().runCommand("netstat -aof | findstr :" + error.split(" port ")[1]).split("\n")[0];
+        String killCommand = System.getProperty("os.name").contains("Windows") ? "taskkill /f /im " : "sudo kill -15 ";
+        new CommandPrompt().runCommand(killCommand + process.split("LISTENING")[1].trim());
+    }
+
+    public void disableLocalTesting() {
+        try {
+            DriverManager.getLocalTesting().stop();
+            localConnected = false;
+        } catch (Exception ignored) {
+        }
+    }
+
+    public void updateTestStatus(SessionId id) {
+        JsonObject result = new JsonObject();
+        result.addProperty("status", scenario.getStatus().toString());
+        result.addProperty("reason", scenario.isFailed() ? "Found some errors in executing the test!" : "All steps are successfully completed!");
+        RestAssured.given().contentType("application/json").body(result).put(getEndpoint(id)).then().assertThat().statusCode(200);
+    }
+
+    public void printResultLink(SessionId id) {
+        Response response = RestAssured.given().when().get(getEndpoint(id));
+        response.then().assertThat().statusCode(200);
+        System.out.println("Report log: " + new Gson().fromJson(response.asString(), JsonObject.class).getAsJsonObject("automation_session").get("browser_url").getAsString());
+    }
+
+    public void stopDriver() {
+        if (RUN_BS && getSessionId() != null)
+            updateTestStatus(getSessionId());
+        try {
+            DriverManager.getDriver().quit();
+        } catch (Exception ignored) {
+        }
+    }
+
+    public DesiredCapabilities getLocalCapabilities(String profile) {
         DesiredCapabilities cap = new DesiredCapabilities();
-        Properties props = getDeviceProps(deviceProfile);
+        Properties props = getDeviceProps(profile);
         cap.setCapability(MobileCapabilityType.PLATFORM_NAME, props.getProperty("platformName"));
         cap.setCapability(MobileCapabilityType.PLATFORM_VERSION, props.getProperty("platformVersion"));
         cap.setCapability(MobileCapabilityType.DEVICE_NAME, props.getProperty("deviceName"));
@@ -96,11 +134,13 @@ public class BaseSetup {
         return cap;
     }
 
-    public DesiredCapabilities getBrowserStackCapabilities(String deviceProfile) {
-        Properties props = getDeviceProps(deviceProfile);
+    public DesiredCapabilities getBrowserStackCapabilities(String profile) {
+        Properties props = getDeviceProps(profile);
         DesiredCapabilities cap = new DesiredCapabilities();
-        cap.setCapability("browserstack.local", props.getProperty("local"));
+        cap.setCapability("project", System.getenv("PROJECT_NAME"));
+        cap.setCapability("build", System.getenv("BUILD_NUMBER"));
         cap.setCapability("name", scenario.getName());
+        cap.setCapability("browserstack.local", props.getProperty("local"));
         cap.setCapability("browserstack.gpsLocation", props.getProperty("gpsLocation"));
         cap.setCapability("platformName", props.getProperty("platformName"));
         cap.setCapability("device", props.getProperty("deviceName"));
