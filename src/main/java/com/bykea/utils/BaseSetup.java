@@ -67,24 +67,11 @@ public class BaseSetup {
         localArgs.put("forcelocal", "true");
         try {
             local.start(localArgs);
+            localConnected = true;
+            DriverManager.setLocalTesting(local);
         } catch (Exception e) {
-            String errorMsg = e.getLocalizedMessage();
-            if (errorMsg.contains("browserstack local client is running"))
-                stopRunningLocalPort(errorMsg);
+            System.out.println(e.getLocalizedMessage());
         }
-        try {
-            local.start(localArgs);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        localConnected = true;
-        DriverManager.setLocalTesting(local);
-    }
-
-    public void stopRunningLocalPort(String error) {
-        String process = new CommandPrompt().runCommand("netstat -aof | findstr :" + error.split(" port ")[1]).split("\n")[0];
-        String killCommand = System.getProperty("os.name").contains("Windows") ? "taskkill /f /im " : "sudo kill -15 ";
-        new CommandPrompt().runCommand(killCommand + process.split("LISTENING")[1].trim());
     }
 
     public void disableLocalTesting() {
