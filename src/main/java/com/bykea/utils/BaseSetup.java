@@ -77,7 +77,6 @@ public class BaseSetup {
     public void disableLocalTesting() {
         try {
             DriverManager.getLocalTesting().stop();
-            localConnected = false;
         } catch (Exception ignored) {
         }
     }
