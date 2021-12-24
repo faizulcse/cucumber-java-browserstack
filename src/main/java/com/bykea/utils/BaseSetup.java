@@ -16,6 +16,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -23,7 +24,7 @@ import java.util.logging.Logger;
 
 public class BaseSetup {
     Scenario scenario;
-    protected boolean localConnected;
+    boolean isConnected;
     protected static final String AUTOMATE_USERNAME = System.getenv("BROWSERSTACK_USERNAME");
     protected static final String AUTOMATE_ACCESS_KEY = System.getenv("BROWSERSTACK_ACCESS_KEY");
     protected static final String BROWSERSTACK_URL = "https://" + AUTOMATE_USERNAME + ":" + AUTOMATE_ACCESS_KEY + "@hub-cloud.browserstack.com/wd/hub";
@@ -31,15 +32,15 @@ public class BaseSetup {
     protected static final String APPIUM_URL = "http://127.0.0.1:4723/wd/hub";
     protected static final String ROOT_DIR = System.getProperty("user.dir");
     protected static final boolean RUN_BS = Boolean.parseBoolean(System.getProperty("browserstack"));
-    protected static final String DEVICE_PROFILE = System.getProperty("profile") == null ? "s21" : System.getProperty("profile");
+    protected static final String DEVICE_PROFILE = System.getProperty("profile") == null ? "android" : System.getProperty("profile");
 
     public void startDriver(Scenario name) {
         Logger.getLogger("org.openqa.selenium").setLevel(Level.OFF);
-        System.out.println("Selected device: " + getDeviceProps(DEVICE_PROFILE).getProperty("deviceName") + ", BrowserStack: " + RUN_BS + ", BS Local: " + localConnected);
         try {
             scenario = name;
             AppiumDriver<?> driver;
             if (RUN_BS) {
+                startLocalTesting(BaseSetup.AUTOMATE_ACCESS_KEY);
                 driver = new AppiumDriver<>(new URL(BROWSERSTACK_URL), getBrowserStackCapabilities(DEVICE_PROFILE));
                 printResultLink(driver.getSessionId());
             } else {
@@ -48,7 +49,9 @@ public class BaseSetup {
             driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
             DriverManager.setWebDriver(driver);
         } catch (Exception e) {
-            System.out.println(e.getLocalizedMessage());
+            e.printStackTrace();
+        } finally {
+            System.out.println("Selected device: " + getDeviceProps(DEVICE_PROFILE).getProperty("deviceName") + ", BrowserStack: " + RUN_BS + ", Local: " + isConnected);
         }
     }
 
@@ -58,27 +61,6 @@ public class BaseSetup {
 
     public String getEndpoint(SessionId id) {
         return API_URL + "/app-automate/sessions/" + id + ".json";
-    }
-
-    public void enableLocalTesting() {
-        Local local = new Local();
-        HashMap<String, String> localArgs = new HashMap<>();
-        localArgs.put("key", AUTOMATE_ACCESS_KEY);
-        localArgs.put("forcelocal", "true");
-        try {
-            local.start(localArgs);
-            localConnected = true;
-            DriverManager.setLocalTesting(local);
-        } catch (Exception e) {
-            System.out.println(e.getLocalizedMessage());
-        }
-    }
-
-    public void disableLocalTesting() {
-        try {
-            DriverManager.getLocalTesting().stop();
-        } catch (Exception ignored) {
-        }
     }
 
     public void updateTestStatus(SessionId id) {
@@ -95,11 +77,17 @@ public class BaseSetup {
     }
 
     public void stopDriver() {
-        if (RUN_BS && getSessionId() != null)
-            updateTestStatus(getSessionId());
         try {
-            DriverManager.getDriver().quit();
-        } catch (Exception ignored) {
+            if (getSessionId() != null) {
+                if (RUN_BS)
+                    updateTestStatus(getSessionId());
+                DriverManager.getDriver().quit();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (RUN_BS)
+                stopLocalTesting();
         }
     }
 
@@ -145,5 +133,36 @@ public class BaseSetup {
             e.printStackTrace();
         }
         return props;
+    }
+
+    public void startLocalTesting(String accessKey) {
+        Local local = new Local();
+        HashMap<String, String> localArgs = new HashMap<>();
+        localArgs.put("key", accessKey);
+        localArgs.put("v", "true");
+        localArgs.put("logFile", "logs.txt");
+        if (checkLocalPort(local, localArgs)) {
+            isConnected = true;
+            DriverManager.setLocalTesting(local);
+        }
+    }
+
+    public boolean checkLocalPort(Local local, Map<String, String> localArgs) {
+        try {
+            local.start(localArgs);
+            return true;
+        } catch (Exception e) {
+            isConnected = true;
+            return false;
+        }
+    }
+
+    public void stopLocalTesting() {
+        try {
+            if (DriverManager.getLocalTesting() != null)
+                DriverManager.getLocalTesting().stop();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
