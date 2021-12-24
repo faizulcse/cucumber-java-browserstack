@@ -144,7 +144,8 @@ public class BaseSetup {
         if (checkLocalPort(local, localArgs)) {
             isConnected = true;
             DriverManager.setLocalTesting(local);
-        }
+        } else
+            DriverManager.setLocalTesting(new Local());
     }
 
     public boolean checkLocalPort(Local local, Map<String, String> localArgs) {
