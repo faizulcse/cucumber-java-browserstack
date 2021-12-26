@@ -22,8 +22,8 @@ public class BaseSetup {
     public static Scenario scenario;
     public static final ResourceBundle bundle = ResourceBundle.getBundle("config");
     public static final boolean BS = Boolean.parseBoolean(System.getProperty("browserstack") == null ? bundle.getString("browserstack") : System.getProperty("browserstack"));
-    protected static final String AUTOMATE_USERNAME = System.getenv("BROWSERSTACK_USERNAME");
-    protected static final String AUTOMATE_ACCESS_KEY = System.getenv("BROWSERSTACK_ACCESS_KEY");
+    protected static final String AUTOMATE_USERNAME = System.getenv("BROWSERSTACK_USERNAME") == null ? System.getProperty("userName") : System.getenv("BROWSERSTACK_USERNAME");
+    protected static final String AUTOMATE_ACCESS_KEY = System.getenv("BROWSERSTACK_ACCESS_KEY") == null ? System.getProperty("accessKey") : System.getenv("BROWSERSTACK_ACCESS_KEY");
     protected static final String APPIUM_URL = bundle.getString("appiumUrl");
     protected static final String BROWSERSTACK_URL = "https://" + AUTOMATE_USERNAME + ":" + AUTOMATE_ACCESS_KEY + "@hub-cloud.browserstack.com/wd/hub";
     protected static final String API_URL = "https://" + AUTOMATE_USERNAME + ":" + AUTOMATE_ACCESS_KEY + "@api-cloud.browserstack.com";
