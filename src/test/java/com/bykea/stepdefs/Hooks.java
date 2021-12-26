@@ -5,14 +5,24 @@ import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.Scenario;
 
-public class Hooks extends BaseSetup {
+public class Hooks {
+    BaseSetup setup = new BaseSetup();
+
+    static {
+        if (BaseSetup.BS) {
+            BaseSetup.enableLocalTesting();
+            Runtime.getRuntime().addShutdownHook(new Thread(BaseSetup::disableLocalTesting));
+        }
+    }
+
     @Before
-    public void setUp(Scenario scenario) {
-        startDriver(scenario);
+    public void setUp(Scenario name) {
+        BaseSetup.scenario = name;
+        setup.startDriver();
     }
 
     @After
     public void tearDown() {
-        stopDriver();
+        setup.stopDriver();
     }
 }

@@ -4,54 +4,42 @@ import com.browserstack.local.Local;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import io.appium.java_client.AppiumDriver;
-import io.appium.java_client.remote.AndroidMobileCapabilityType;
-import io.appium.java_client.remote.MobileCapabilityType;
 import io.cucumber.java.Scenario;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.SessionId;
 
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.ResourceBundle;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class BaseSetup {
-    Scenario scenario;
-    boolean isConnected;
+    private static Local local;
+    public static Scenario scenario;
+    public static final ResourceBundle bundle = ResourceBundle.getBundle("config");
+    public static final boolean BS = Boolean.parseBoolean(System.getProperty("browserstack") == null ? bundle.getString("browserstack") : System.getProperty("browserstack"));
     protected static final String AUTOMATE_USERNAME = System.getenv("BROWSERSTACK_USERNAME");
     protected static final String AUTOMATE_ACCESS_KEY = System.getenv("BROWSERSTACK_ACCESS_KEY");
+    protected static final String APPIUM_URL = bundle.getString("appiumUrl");
     protected static final String BROWSERSTACK_URL = "https://" + AUTOMATE_USERNAME + ":" + AUTOMATE_ACCESS_KEY + "@hub-cloud.browserstack.com/wd/hub";
     protected static final String API_URL = "https://" + AUTOMATE_USERNAME + ":" + AUTOMATE_ACCESS_KEY + "@api-cloud.browserstack.com";
-    protected static final String APPIUM_URL = "http://127.0.0.1:4723/wd/hub";
     protected static final String ROOT_DIR = System.getProperty("user.dir");
-    protected static final boolean RUN_BS = Boolean.parseBoolean(System.getProperty("browserstack"));
-    protected static final String DEVICE_PROFILE = System.getProperty("profile") == null ? "android" : System.getProperty("profile");
+    protected static final String SERVER_URL = BS ? BROWSERSTACK_URL : APPIUM_URL;
 
-    public void startDriver(Scenario name) {
-        Logger.getLogger("org.openqa.selenium").setLevel(Level.OFF);
+    public void startDriver() {
         try {
-            scenario = name;
+            Logger.getLogger("org.openqa.selenium").setLevel(Level.OFF);
             AppiumDriver<?> driver;
-            if (RUN_BS) {
-                startLocalTesting(BaseSetup.AUTOMATE_ACCESS_KEY);
-                driver = new AppiumDriver<>(new URL(BROWSERSTACK_URL), getBrowserStackCapabilities(DEVICE_PROFILE));
-                printResultLink(driver.getSessionId());
-            } else {
-                driver = new AppiumDriver<>(new URL(APPIUM_URL), getLocalCapabilities(DEVICE_PROFILE));
-            }
+            driver = new AppiumDriver<>(new URL(SERVER_URL), getDesiredCaps());
             driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
             DriverManager.setWebDriver(driver);
+            if (BS) printResultLink(driver.getSessionId());
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            System.out.println("Selected device: " + getDeviceProps(DEVICE_PROFILE).getProperty("deviceName") + ", BrowserStack: " + RUN_BS + ", Local: " + isConnected);
         }
     }
 
@@ -79,89 +67,52 @@ public class BaseSetup {
     public void stopDriver() {
         try {
             if (getSessionId() != null) {
-                if (RUN_BS)
+                if (BS)
                     updateTestStatus(getSessionId());
                 DriverManager.getDriver().quit();
             }
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            if (RUN_BS)
-                stopLocalTesting();
         }
     }
 
-    public DesiredCapabilities getLocalCapabilities(String profile) {
-        DesiredCapabilities cap = new DesiredCapabilities();
-        Properties props = getDeviceProps(profile);
-        cap.setCapability(MobileCapabilityType.PLATFORM_NAME, props.getProperty("platformName"));
-        cap.setCapability(MobileCapabilityType.PLATFORM_VERSION, props.getProperty("platformVersion"));
-        cap.setCapability(MobileCapabilityType.DEVICE_NAME, props.getProperty("deviceName"));
-        cap.setCapability(MobileCapabilityType.AUTOMATION_NAME, "Appium");
-        cap.setCapability(MobileCapabilityType.NEW_COMMAND_TIMEOUT, "12000");
-        cap.setCapability(AndroidMobileCapabilityType.AUTO_GRANT_PERMISSIONS, "true");
-        cap.setCapability(MobileCapabilityType.APP, "C:/Users/BS705/Downloads/" + props.getProperty("app"));
-        cap.setCapability(AndroidMobileCapabilityType.APP_PACKAGE, props.getProperty("appPackage"));
-        cap.setCapability(AndroidMobileCapabilityType.APP_ACTIVITY, props.getProperty("appActivity"));
-        cap.setCapability(MobileCapabilityType.FULL_RESET, props.getProperty("fullReset"));
-        cap.setCapability(MobileCapabilityType.NO_RESET, props.getProperty("noReset"));
-        return cap;
+    public DesiredCapabilities getDesiredCaps() {
+        DesiredCapabilities caps = new DesiredCapabilities();
+        caps.setCapability("device", System.getProperty("device_name") == null ? bundle.getString("deviceName") : System.getProperty("device_name"));
+        caps.setCapability("platformName", System.getProperty("platform_name") == null ? bundle.getString("platformName") : System.getProperty("platform_name"));
+        caps.setCapability("platformVersion", System.getProperty("os_version") == null ? bundle.getString("platformVersion") : System.getProperty("os_version"));
+        caps.setCapability("browserstack.gpsLocation", System.getProperty("gps_location") == null ? bundle.getString("gpsLocation") : System.getProperty("gps_location"));
+        caps.setCapability("autoGrantPermissions", "true");
+        caps.setCapability("fullReset", "true");
+        caps.setCapability("noReset", "false");
+        if (BS) {
+            caps.setCapability("app", System.getProperty("app_name") == null ? bundle.getString("app") : System.getProperty("app_name"));
+            caps.setCapability("project", System.getenv("PROJECT_NAME"));
+            caps.setCapability("build", System.getenv("BUILD_NUMBER"));
+            caps.setCapability("name", scenario.getName());
+            caps.setCapability("browserstack.local", "true");
+        } else {
+            caps.setCapability("app", bundle.getString("app"));
+            caps.setCapability("appPackage", bundle.getString("appPackage"));
+            caps.setCapability("appActivity", bundle.getString("appActivity"));
+        }
+        return caps;
     }
 
-    public DesiredCapabilities getBrowserStackCapabilities(String profile) {
-        Properties props = getDeviceProps(profile);
-        DesiredCapabilities cap = new DesiredCapabilities();
-        cap.setCapability("project", System.getenv("PROJECT_NAME"));
-        cap.setCapability("build", System.getenv("BUILD_NUMBER"));
-        cap.setCapability("name", scenario.getName());
-        cap.setCapability("browserstack.local", props.getProperty("local"));
-        cap.setCapability("browserstack.gpsLocation", props.getProperty("gpsLocation"));
-        cap.setCapability("platformName", props.getProperty("platformName"));
-        cap.setCapability("device", props.getProperty("deviceName"));
-        cap.setCapability("platformVersion", props.getProperty("platformVersion"));
-        cap.setCapability("autoGrantPermissions", props.getProperty("autoGrantPermissions"));
-        cap.setCapability("app_url", props.getProperty("app"));
-        return cap;
-    }
-
-    public static Properties getDeviceProps(String name) {
-        String profile = ROOT_DIR + "/devices/" + name + ".properties";
-        Properties props = new Properties();
+    public static void enableLocalTesting() {
         try {
-            props.load(new FileInputStream(profile));
-        } catch (IOException e) {
+            local = new Local();
+            HashMap<String, String> localArgs = new HashMap<>();
+            localArgs.put("key", AUTOMATE_ACCESS_KEY);
+            local.start(localArgs);
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        return props;
     }
 
-    public void startLocalTesting(String accessKey) {
-        Local local = new Local();
-        HashMap<String, String> localArgs = new HashMap<>();
-        localArgs.put("key", accessKey);
-        localArgs.put("v", "true");
-        localArgs.put("logFile", "logs.txt");
-        if (checkLocalPort(local, localArgs)) {
-            isConnected = true;
-            DriverManager.setLocalTesting(local);
-        } else
-            DriverManager.setLocalTesting(new Local());
-    }
-
-    public boolean checkLocalPort(Local local, Map<String, String> localArgs) {
+    public static void disableLocalTesting() {
         try {
-            local.start(localArgs);
-            return true;
-        } catch (Exception e) {
-            isConnected = true;
-            return false;
-        }
-    }
-
-    public void stopLocalTesting() {
-        try {
-            if (DriverManager.getLocalTesting() != null)
-                DriverManager.getLocalTesting().stop();
+            local.stop();
         } catch (Exception e) {
             e.printStackTrace();
         }
