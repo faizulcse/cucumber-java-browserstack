@@ -106,7 +106,7 @@ public class BaseSetup {
             caps.setCapability("name", getScenario().getName());
             if (build != null) {
                 caps.setCapability("project", "BYKEA AUTOMATION PROJECT");
-                caps.setCapability("build", "Bykea Automation Build: " + build);
+                caps.setCapability("build", build);
             }
         } else {
             caps.setCapability("appPackage", bundle.getString("appPackage"));
