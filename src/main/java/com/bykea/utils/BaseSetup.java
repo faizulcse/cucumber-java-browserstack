@@ -22,7 +22,6 @@ public class BaseSetup {
     private static Local local;
     public static final ResourceBundle bundle = ResourceBundle.getBundle("config");
     public static final boolean BS = Boolean.parseBoolean(System.getenv("BROWSERSTACK") == null ? bundle.getString("browserstack") : System.getenv("BROWSERSTACK"));
-    public static final boolean BS_LOCAL = Boolean.parseBoolean(System.getenv("BROWSERSTACK_LOCAL") == null ? bundle.getString("browserstackLocal") : System.getenv("BROWSERSTACK_LOCAL"));
     protected static final String AUTOMATE_USERNAME = System.getenv("BROWSERSTACK_USERNAME") == null ? bundle.getString("browserstackUsername") : System.getenv("BROWSERSTACK_USERNAME");
     protected static final String AUTOMATE_ACCESS_KEY = System.getenv("BROWSERSTACK_ACCESS_KEY") == null ? bundle.getString("browserstackAccessKey") : System.getenv("BROWSERSTACK_ACCESS_KEY");
     protected static final String APPIUM_URL = bundle.getString("appiumUrl");
@@ -106,7 +105,7 @@ public class BaseSetup {
         caps.setCapability("fullReset", "true");
         caps.setCapability("noReset", "false");
         if (BS) {
-            caps.setCapability("browserstack.local", BS_LOCAL);
+            caps.setCapability("browserstack.local", System.getenv("BROWSERSTACK_LOCAL"));
             caps.setCapability("project", "BYKEA AUTOMATION PROJECT");
             caps.setCapability("build", "Bykea Automation Build: " + System.getenv("BUILD_NUMBER"));
             caps.setCapability("name", getScenario().getName());
