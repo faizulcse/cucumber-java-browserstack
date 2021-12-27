@@ -23,8 +23,8 @@ public class BaseSetup {
     public static final ResourceBundle bundle = ResourceBundle.getBundle("config");
     public static final boolean BS = Boolean.parseBoolean(System.getenv("BROWSERSTACK") == null ? bundle.getString("browserstack") : System.getenv("BROWSERSTACK"));
     public static final boolean BS_LOCAL = Boolean.parseBoolean(System.getenv("BROWSERSTACK_LOCAL") == null ? bundle.getString("browserstackLocal") : System.getenv("BROWSERSTACK_LOCAL"));
-    protected static final String AUTOMATE_USERNAME = System.getenv("BROWSERSTACK_USERNAME") == null ? System.getProperty("browserstack_username") : System.getenv("BROWSERSTACK_USERNAME");
-    protected static final String AUTOMATE_ACCESS_KEY = System.getenv("BROWSERSTACK_ACCESS_KEY") == null ? System.getProperty("browserstack_access_key") : System.getenv("BROWSERSTACK_ACCESS_KEY");
+    protected static final String AUTOMATE_USERNAME = System.getenv("BROWSERSTACK_USERNAME") == null ? bundle.getString("browserstackUsername") : System.getenv("BROWSERSTACK_USERNAME");
+    protected static final String AUTOMATE_ACCESS_KEY = System.getenv("BROWSERSTACK_ACCESS_KEY") == null ? bundle.getString("browserstackAccessKey") : System.getenv("BROWSERSTACK_ACCESS_KEY");
     protected static final String APPIUM_URL = bundle.getString("appiumUrl");
     protected static final String BROWSERSTACK_URL = "https://" + AUTOMATE_USERNAME + ":" + AUTOMATE_ACCESS_KEY + "@hub-cloud.browserstack.com/wd/hub";
     protected static final String API_URL = "https://" + AUTOMATE_USERNAME + ":" + AUTOMATE_ACCESS_KEY + "@api-cloud.browserstack.com";
@@ -42,9 +42,9 @@ public class BaseSetup {
     public void startDriver() {
         System.out.println(System.getenv("BROWSERSTACK_USERNAME"));
         System.out.println(System.getenv("BROWSERSTACK_ACCESS_KEY"));
-        System.out.println(System.getenv("Credentials: " + "BS_CREDENTIALS"));
         System.out.println(System.getenv("DEVICE_PROFILE"));
         System.out.println(System.getenv("PLATFORM_NAME"));
+        System.out.println(System.getenv("TAGS"));
         System.out.println(System.getenv("APP_NAME"));
         System.out.println(System.getenv("GPS_LOCATION"));
         System.out.println(System.getenv("BROWSERSTACK"));
@@ -52,6 +52,7 @@ public class BaseSetup {
         try {
             Logger.getLogger("org.openqa.selenium").setLevel(Level.OFF);
             AppiumDriver<?> driver;
+            System.out.println(getDesiredCaps());
             driver = new AppiumDriver<>(new URL(SERVER_URL), getDesiredCaps());
             driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
             DriverManager.setWebDriver(driver);
