@@ -39,15 +39,6 @@ public class BaseSetup {
     }
 
     public void startDriver() {
-        System.out.println(System.getenv("BROWSERSTACK_USERNAME"));
-        System.out.println(System.getenv("BROWSERSTACK_ACCESS_KEY"));
-        System.out.println(System.getenv("DEVICE_PROFILE"));
-        System.out.println(System.getenv("PLATFORM_NAME"));
-        System.out.println(System.getenv("TAGS"));
-        System.out.println(System.getenv("APP_NAME"));
-        System.out.println(System.getenv("GPS_LOCATION"));
-        System.out.println(System.getenv("BROWSERSTACK"));
-        System.out.println(System.getenv("BROWSERSTACK_LOCAL"));
         try {
             Logger.getLogger("org.openqa.selenium").setLevel(Level.OFF);
             AppiumDriver<?> driver;
@@ -95,20 +86,28 @@ public class BaseSetup {
     }
 
     public DesiredCapabilities getDesiredCaps() {
+        String deviceProfile = System.getenv("DEVICE_PROFILE");
+        String gpsLocation = System.getenv("GPS_LOCATION");
+        String platformName = System.getenv("GPS_LOCATION");
+        String appName = System.getenv("APP_NAME");
+        String bsLocal = System.getenv("BROWSERSTACK_LOCAL");
+        String build = System.getenv("BUILD_NUMBER");
         DesiredCapabilities caps = new DesiredCapabilities();
-        caps.setCapability("device", System.getenv("DEVICE_PROFILE") == null ? bundle.getString("deviceName") : System.getenv("DEVICE_PROFILE").split("@")[0]);
-        caps.setCapability("platformVersion", System.getenv("DEVICE_PROFILE") == null ? bundle.getString("platformVersion") : System.getenv("DEVICE_PROFILE").split("@")[1]);
-        caps.setCapability("platformName", System.getenv("PLATFORM_NAME") == null ? bundle.getString("platformName") : System.getenv("PLATFORM_NAME"));
-        caps.setCapability("browserstack.gpsLocation", System.getenv("GPS_LOCATION") == null ? bundle.getString("gpsLocation") : System.getenv("GPS_LOCATION"));
-        caps.setCapability("app", System.getProperty("APP_NAME") == null ? bundle.getString("app") : System.getenv("APP_NAME"));
+        caps.setCapability("device", deviceProfile != null ? deviceProfile.split("@")[0] : bundle.getString("deviceName"));
+        caps.setCapability("platformVersion", deviceProfile != null ? deviceProfile.split("@")[1] : bundle.getString("platformVersion"));
+        caps.setCapability("platformName", platformName != null ? platformName : bundle.getString("platformName"));
+        caps.setCapability("browserstack.gpsLocation", gpsLocation != null ? gpsLocation : bundle.getString("gpsLocation"));
+        caps.setCapability("app", appName != null ? appName : bundle.getString("app"));
         caps.setCapability("autoGrantPermissions", "true");
         caps.setCapability("fullReset", "true");
         caps.setCapability("noReset", "false");
         if (BS) {
-            caps.setCapability("browserstack.local", System.getenv("BROWSERSTACK_LOCAL"));
-            caps.setCapability("project", "BYKEA AUTOMATION PROJECT");
-            caps.setCapability("build", "Bykea Automation Build: " + System.getenv("BUILD_NUMBER"));
+            caps.setCapability("browserstack.local", bsLocal == null ? bundle.getString("browserstackLocal") : bsLocal);
             caps.setCapability("name", getScenario().getName());
+            if (build != null) {
+                caps.setCapability("project", "BYKEA AUTOMATION PROJECT");
+                caps.setCapability("build", "Bykea Automation Build: " + build);
+            }
         } else {
             caps.setCapability("appPackage", bundle.getString("appPackage"));
             caps.setCapability("appActivity", bundle.getString("appActivity"));
