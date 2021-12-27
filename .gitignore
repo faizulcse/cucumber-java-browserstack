@@ -1,3 +1,4 @@
 /target
 .idea/
 browserstack.err
+logs.txt
