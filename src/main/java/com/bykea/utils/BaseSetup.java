@@ -22,8 +22,8 @@ public class BaseSetup {
     public static Scenario scenario;
     public static final ResourceBundle bundle = ResourceBundle.getBundle("config");
     public static final boolean BS = Boolean.parseBoolean(System.getProperty("browserstack") == null ? bundle.getString("browserstack") : System.getProperty("browserstack"));
-    protected static final String AUTOMATE_USERNAME = System.getenv("BROWSERSTACK_USERNAME") == null ? System.getProperty("userName") : System.getenv("BROWSERSTACK_USERNAME");
-    protected static final String AUTOMATE_ACCESS_KEY = System.getenv("BROWSERSTACK_ACCESS_KEY") == null ? System.getProperty("accessKey") : System.getenv("BROWSERSTACK_ACCESS_KEY");
+    protected static final String AUTOMATE_USERNAME = System.getenv("BROWSERSTACK_USERNAME") == null ? System.getProperty("browserstack_username") : System.getenv("BROWSERSTACK_USERNAME");
+    protected static final String AUTOMATE_ACCESS_KEY = System.getenv("BROWSERSTACK_ACCESS_KEY") == null ? System.getProperty("browserstack_access_key") : System.getenv("BROWSERSTACK_ACCESS_KEY");
     protected static final String APPIUM_URL = bundle.getString("appiumUrl");
     protected static final String BROWSERSTACK_URL = "https://" + AUTOMATE_USERNAME + ":" + AUTOMATE_ACCESS_KEY + "@hub-cloud.browserstack.com/wd/hub";
     protected static final String API_URL = "https://" + AUTOMATE_USERNAME + ":" + AUTOMATE_ACCESS_KEY + "@api-cloud.browserstack.com";
@@ -33,6 +33,7 @@ public class BaseSetup {
     public void startDriver() {
         try {
             Logger.getLogger("org.openqa.selenium").setLevel(Level.OFF);
+            System.out.println("Test Run Using: " + getDesiredCaps());
             AppiumDriver<?> driver;
             driver = new AppiumDriver<>(new URL(SERVER_URL), getDesiredCaps());
             driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
@@ -87,8 +88,8 @@ public class BaseSetup {
         caps.setCapability("noReset", "false");
         if (BS) {
             caps.setCapability("app", System.getProperty("app_name") == null ? bundle.getString("app") : System.getProperty("app_name"));
-            caps.setCapability("project", System.getenv("PROJECT_NAME"));
-            caps.setCapability("build", System.getenv("BUILD_NUMBER"));
+            caps.setCapability("project", "BYKEA AUTOMATION PROJECT");
+            caps.setCapability("build", System.getenv("BROWSERSTACK_BUILD_NAME"));
             caps.setCapability("name", scenario.getName());
             caps.setCapability("browserstack.local", "true");
         } else {
