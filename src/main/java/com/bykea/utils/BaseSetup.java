@@ -18,10 +18,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class BaseSetup {
+    Scenario scenario;
     private static Local local;
-    public static Scenario scenario;
     public static final ResourceBundle bundle = ResourceBundle.getBundle("config");
-    public static final boolean BS = Boolean.parseBoolean(System.getProperty("browserstack") == null ? bundle.getString("browserstack") : System.getProperty("browserstack"));
+    public static final boolean BS = Boolean.parseBoolean(System.getenv("BROWSERSTACK") == null ? bundle.getString("browserstack") : System.getenv("BROWSERSTACK"));
     protected static final String AUTOMATE_USERNAME = System.getenv("BROWSERSTACK_USERNAME") == null ? System.getProperty("browserstack_username") : System.getenv("BROWSERSTACK_USERNAME");
     protected static final String AUTOMATE_ACCESS_KEY = System.getenv("BROWSERSTACK_ACCESS_KEY") == null ? System.getProperty("browserstack_access_key") : System.getenv("BROWSERSTACK_ACCESS_KEY");
     protected static final String APPIUM_URL = bundle.getString("appiumUrl");
@@ -30,8 +30,19 @@ public class BaseSetup {
     protected static final String ROOT_DIR = System.getProperty("user.dir");
     protected static final String SERVER_URL = BS ? BROWSERSTACK_URL : APPIUM_URL;
 
+    public Scenario getScenario() {
+        return scenario;
+    }
+
+    public void setScenario(Scenario scenario) {
+        this.scenario = scenario;
+    }
+
     public void startDriver() {
-        System.out.println(System.getenv("BROWSERSTACK_LOCAL"));
+        System.out.println(System.getenv("BROWSERSTACK"));
+        System.out.println(System.getenv("BROWSERSTACK_USERNAME"));
+        System.out.println(System.getenv("BROWSERSTACK_ACCESS_KEY"));
+        System.out.println(System.getenv("BS_CREDENTIALS"));
         try {
             Logger.getLogger("org.openqa.selenium").setLevel(Level.OFF);
             AppiumDriver<?> driver;
@@ -78,18 +89,10 @@ public class BaseSetup {
     }
 
     public DesiredCapabilities getDesiredCaps() {
-        String device_profile = System.getenv("DEVICE_PROFILE");
-        System.out.println(device_profile);
-        if (device_profile != null) {
-            String device = device_profile.split("@")[0];
-            String os_version = device_profile.split("@")[1];
-            System.out.println(device);
-            System.out.println(os_version);
-        }
-
+        String profile = System.getenv("DEVICE_PROFILE");
         DesiredCapabilities caps = new DesiredCapabilities();
-        caps.setCapability("device", device_profile == null ? bundle.getString("deviceName") : device_profile.split("@")[0]);
-        caps.setCapability("platformVersion", device_profile == null ? bundle.getString("platformVersion") : device_profile.split("@")[1]);
+        caps.setCapability("device", profile == null ? bundle.getString("deviceName") : profile.split("@")[0]);
+        caps.setCapability("platformVersion", profile == null ? bundle.getString("platformVersion") : profile.split("@")[1]);
         caps.setCapability("platformName", System.getProperty("platform_name") == null ? bundle.getString("platformName") : System.getProperty("platform_name"));
         caps.setCapability("browserstack.gpsLocation", System.getProperty("gps_location") == null ? bundle.getString("gpsLocation") : System.getProperty("gps_location"));
         caps.setCapability("autoGrantPermissions", "true");
@@ -99,7 +102,7 @@ public class BaseSetup {
             caps.setCapability("app", System.getProperty("app_name") == null ? bundle.getString("app") : System.getProperty("app_name"));
             caps.setCapability("project", "BYKEA AUTOMATION PROJECT");
             caps.setCapability("build", "Bykea Automation Build: " + System.getenv("BUILD_NUMBER"));
-            caps.setCapability("name", scenario.getName());
+            caps.setCapability("name", getScenario());
             caps.setCapability("browserstack.local", "true");
         } else {
             caps.setCapability("app", bundle.getString("app"));
