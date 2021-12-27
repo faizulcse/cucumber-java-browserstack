@@ -9,7 +9,7 @@ public class Hooks {
     BaseSetup setup = new BaseSetup();
 
     static {
-        if (BaseSetup.BS) {
+        if (BaseSetup.BS_LOCAL) {
             BaseSetup.enableLocalTesting();
             Runtime.getRuntime().addShutdownHook(new Thread(BaseSetup::disableLocalTesting));
         }
