@@ -9,12 +9,10 @@ import java.util.ResourceBundle;
 
 public class Hooks {
     BaseSetup setup = new BaseSetup();
-    static String localConfig = ResourceBundle.getBundle("config").getString("browserstackLocal");
-    static String bsLocal = System.getenv("BROWSERSTACK_LOCAL");
-    static boolean isLocal = Boolean.parseBoolean(bsLocal != null ? bsLocal : localConfig);
+    static String bsLocal = ResourceBundle.getBundle("config").getString("browserstackLocal");
 
     static {
-        if (isLocal) {
+        if (Boolean.parseBoolean(bsLocal)) {
             BaseSetup.enableLocalTesting();
             Runtime.getRuntime().addShutdownHook(new Thread(BaseSetup::disableLocalTesting));
         }
