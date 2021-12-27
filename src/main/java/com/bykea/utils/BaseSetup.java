@@ -91,7 +91,7 @@ public class BaseSetup {
         String platformName = System.getenv("GPS_LOCATION");
         String appName = System.getenv("APP_NAME");
         String bsLocal = System.getenv("BROWSERSTACK_LOCAL");
-        String build = System.getenv("BUILD_NUMBER");
+        String build = System.getenv("BROWSERSTACK_BUILD_NAME");
         DesiredCapabilities caps = new DesiredCapabilities();
         caps.setCapability("device", deviceProfile != null ? deviceProfile.split("@")[0] : bundle.getString("deviceName"));
         caps.setCapability("platformVersion", deviceProfile != null ? deviceProfile.split("@")[1] : bundle.getString("platformVersion"));
