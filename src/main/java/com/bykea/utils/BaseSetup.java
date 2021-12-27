@@ -109,7 +109,7 @@ public class BaseSetup {
             caps.setCapability("browserstack.local", BS_LOCAL);
             caps.setCapability("project", "BYKEA AUTOMATION PROJECT");
             caps.setCapability("build", "Bykea Automation Build: " + System.getenv("BUILD_NUMBER"));
-            caps.setCapability("name", getScenario());
+            caps.setCapability("name", getScenario().getName());
         } else {
             caps.setCapability("appPackage", bundle.getString("appPackage"));
             caps.setCapability("appActivity", bundle.getString("appActivity"));
