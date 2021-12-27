@@ -40,10 +40,15 @@ public class BaseSetup {
     }
 
     public void startDriver() {
-        System.out.println(System.getenv("BROWSERSTACK"));
         System.out.println(System.getenv("BROWSERSTACK_USERNAME"));
         System.out.println(System.getenv("BROWSERSTACK_ACCESS_KEY"));
-        System.out.println(System.getenv("BS_CREDENTIALS"));
+        System.out.println(System.getenv("Credentials: " + "BS_CREDENTIALS"));
+        System.out.println(System.getenv("DEVICE_PROFILE"));
+        System.out.println(System.getenv("PLATFORM_NAME"));
+        System.out.println(System.getenv("APP_NAME"));
+        System.out.println(System.getenv("GPS_LOCATION"));
+        System.out.println(System.getenv("BROWSERSTACK"));
+        System.out.println(System.getenv("BROWSERSTACK_LOCAL"));
         try {
             Logger.getLogger("org.openqa.selenium").setLevel(Level.OFF);
             AppiumDriver<?> driver;
