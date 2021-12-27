@@ -17,7 +17,7 @@ public class Hooks {
 
     @Before
     public void setUp(Scenario name) {
-        setup.setScenario(name)
+        setup.setScenario(name);
         setup.startDriver();
     }
 
