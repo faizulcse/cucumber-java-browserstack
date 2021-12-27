@@ -98,7 +98,7 @@ public class BaseSetup {
         if (BS) {
             caps.setCapability("app", System.getProperty("app_name") == null ? bundle.getString("app") : System.getProperty("app_name"));
             caps.setCapability("project", "BYKEA AUTOMATION PROJECT");
-            caps.setCapability("build", "Build: " + System.getenv("BUILD_NUMBER"));
+            caps.setCapability("build", "Bykea Automation Build: " + System.getenv("BUILD_NUMBER"));
             caps.setCapability("name", scenario.getName());
             caps.setCapability("browserstack.local", "true");
         } else {
