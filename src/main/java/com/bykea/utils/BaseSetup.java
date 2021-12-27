@@ -31,9 +31,9 @@ public class BaseSetup {
     protected static final String SERVER_URL = BS ? BROWSERSTACK_URL : APPIUM_URL;
 
     public void startDriver() {
+        System.out.println(System.getenv("BROWSERSTACK_LOCAL"));
         try {
             Logger.getLogger("org.openqa.selenium").setLevel(Level.OFF);
-            System.out.println("Test Run Using: " + getDesiredCaps());
             AppiumDriver<?> driver;
             driver = new AppiumDriver<>(new URL(SERVER_URL), getDesiredCaps());
             driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
@@ -78,10 +78,19 @@ public class BaseSetup {
     }
 
     public DesiredCapabilities getDesiredCaps() {
+        String device_profile = System.getenv("DEVICE_PROFILE");
+        System.out.println(device_profile);
+        if (device_profile != null) {
+            String device = device_profile.split("@")[0];
+            String os_version = device_profile.split("@")[1];
+            System.out.println(device);
+            System.out.println(os_version);
+        }
+
         DesiredCapabilities caps = new DesiredCapabilities();
-        caps.setCapability("device", System.getProperty("device_name") == null ? bundle.getString("deviceName") : System.getProperty("device_name"));
+        caps.setCapability("device", device_profile == null ? bundle.getString("deviceName") : device_profile.split("@")[0]);
+        caps.setCapability("platformVersion", device_profile == null ? bundle.getString("platformVersion") : device_profile.split("@")[1]);
         caps.setCapability("platformName", System.getProperty("platform_name") == null ? bundle.getString("platformName") : System.getProperty("platform_name"));
-        caps.setCapability("platformVersion", System.getProperty("os_version") == null ? bundle.getString("platformVersion") : System.getProperty("os_version"));
         caps.setCapability("browserstack.gpsLocation", System.getProperty("gps_location") == null ? bundle.getString("gpsLocation") : System.getProperty("gps_location"));
         caps.setCapability("autoGrantPermissions", "true");
         caps.setCapability("fullReset", "true");
@@ -89,7 +98,7 @@ public class BaseSetup {
         if (BS) {
             caps.setCapability("app", System.getProperty("app_name") == null ? bundle.getString("app") : System.getProperty("app_name"));
             caps.setCapability("project", "BYKEA AUTOMATION PROJECT");
-            caps.setCapability("build", "Build: "+System.getenv("BUILD_NUMBER"));
+            caps.setCapability("build", "Build: " + System.getenv("BUILD_NUMBER"));
             caps.setCapability("name", scenario.getName());
             caps.setCapability("browserstack.local", "true");
         } else {
