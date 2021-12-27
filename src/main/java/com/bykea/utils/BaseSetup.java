@@ -63,7 +63,7 @@ public class BaseSetup {
     public void updateTestStatus(SessionId id) {
         JsonObject result = new JsonObject();
         result.addProperty("status", scenario.getStatus().toString());
-        result.addProperty("reason", scenario.isFailed() ? "Found some errors in executing the test!" : "All steps are successfully completed!");
+        result.addProperty("reason", scenario.isFailed() ? "No such element locator found!" : "All steps are successfully completed!");
         RestAssured.given().contentType("application/json").body(result).put(getEndpoint(id)).then().assertThat().statusCode(200);
     }
 
