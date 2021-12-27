@@ -41,8 +41,8 @@ public class BaseSetup {
     public void startDriver() {
         try {
             Logger.getLogger("org.openqa.selenium").setLevel(Level.OFF);
+            System.out.println("Selected Capabilities: " + getDesiredCaps().asMap());
             AppiumDriver<?> driver;
-            System.out.println(getDesiredCaps());
             driver = new AppiumDriver<>(new URL(SERVER_URL), getDesiredCaps());
             driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
             DriverManager.setWebDriver(driver);
