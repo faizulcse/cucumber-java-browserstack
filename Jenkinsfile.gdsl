@@ -1,10 +1,11 @@
 import groovy.json.JsonSlurper
-
 node("master") {
     stage('Upload App to BrowserStack') {
-        def status = sh script: 'curl -u "${BROWSERSTACK_USERNAME}:${BROWSERSTACK_ACCESS_KEY}" -X GET "https://api-cloud.browserstack.com/app-automate/recent_apps/customer_app_jenkins"', returnStdout: true
-        println(status)
-        def parsedReportJson = new JsonSlurper().parseText(status)
-        println(parsedReportJson[0]."app_url")
+        browserstack('bs_credentials'){
+            def response = sh script: 'curl -s -u ${BROWSERSTACK_USERNAME}:${BROWSERSTACK_ACCESS_KEY} -X GET "https://api-cloud.browserstack.com/app-automate/recent_apps/customer_app_jenkins"', returnStdout: true
+            println(response)
+            def parsedReportJson = new JsonSlurper().parseText(response)
+            println(parsedReportJson[0]."app_url")
+        }
     }
 }
